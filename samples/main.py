@@ -1,11 +1,12 @@
-'''
+"""
     System library
-'''
+"""
 import socket
 import threading
 from threading import Lock, Thread
 import time
 import os
+
 '''
     project implemented
 '''
@@ -23,8 +24,8 @@ if __name__ == '__main__':
     cli.printLogo()
     cli.cliHelp(all)
 
-    #s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-    #s.connect()
+    # s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+    # s.connect()
     while True:
         cli.cliPrompt()
     """

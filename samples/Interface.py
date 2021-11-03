@@ -1,10 +1,15 @@
+import sys
+
+from LogSys import Log
+
+
 class Cli:
     """
         Class Cli include stuffs relating to menu stuff, user's interface looking ...
     """
-    curPath = ''
-    connStat = ''
-    usrName = ''
+    curPath = '/root'
+    connStat = 'Offline'
+    usrName = 'Rrrrraulista'
 
     def printLogo(self):
         """
@@ -39,11 +44,16 @@ class Cli:
 
     def cliPrompt(self):
         # [Net state] < user's name > ( current working path ) >>> _type operation here_
-        prompt_str = "[" + self.connStat + "] <" + self.usrName + "> (" + self.curPath + ") >>> "
+        log = Log()
+        prompt_str = "[" + self.connStat + "] <" + self.usrName + "> ( " + self.curPath + " ) >>> "
         command_str = input(prompt_str)
         command_list = self.opRead(command_str)
         oper, opt, args = self.opSplit(command_list)
-        self.opShow(command_list)
+        # self.opShow(command_list)
+        log.writeHistory(oper)
+        if oper == 'exit':
+            print("Bye ~")
+            sys.exit()
         return oper, opt, args
 
     """
@@ -92,7 +102,6 @@ class Cli:
         else:
             optional.pop(0)
         args.pop(0)
-        print('result opSplit', operation, optional, args)
         optional = optional[1:]
         return operation, optional, args
 
