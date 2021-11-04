@@ -1,5 +1,4 @@
 import sys
-
 from LogSys import Log
 
 
@@ -21,19 +20,19 @@ class Cli:
         print(' / /_// (_| \__ \ | \__ \ |_  / \_/ /| |_ (_| |\ \   ')
         print('/___,\' \__,_|___/ |_|___/\__| \___,_\ \__\__,_\__/    ... is being started !\n')
 
-    def cliHelp(self, type):
+    def cliHelp(self, cmd_type):
         """
             This func could print several possible helps to users
                 1. "all" : mainly using in the welcome interface;
                 2. "sp"  : to give specific optional args when using op wrongly
                 3. to do
         """
-        if type == 'all':
+        if cmd_type == 'all':
             print('usage: <operation> [optional] [arguments] ...')
             print('          ls :     to display all files in this directory')
             print('          pwd:     to show the currently using directory')
             print('          cd:      move to the wanted directory')
-        elif type == "sp":
+        elif cmd_type == "sp":
             print("❌ something seems going wrong")
             print("operation [optional] (arg_1) (arg_2)")
             # to do
@@ -56,12 +55,11 @@ class Cli:
             sys.exit()
         return oper, opt, args
 
-    """
-        Read an operation from stdin, delete all spaces
-        retVal : opList : ['op1', 'op2', 'op3', ... ]
-    """
-
     def opRead(self, opStdin):
+        """
+            Read an operation from stdin, delete all spaces
+            retVal : opList : ['op1', 'op2', 'op3', ... ]
+        """
         opList = opStdin.split(' ')
         count = 0
         for i in range(len(opList)):
@@ -78,14 +76,13 @@ class Cli:
                 idx += 1
         return retList
 
-    """
-        Split the operation with:
-            1. operation : Major Operation
-            2. optional : Optional argument
-            3. args : ['arg1', 'arg2', 'arg3', ... ]
-    """
-
     def opSplit(self, opList):
+        """
+            Split the operation with:
+                1. operation : Major Operation
+                2. optional : Optional argument
+                3. args : ['arg1', 'arg2', 'arg3', ... ]
+        """
         operation = opList[0]
         optional = ['']
         args = ['']
@@ -105,11 +102,10 @@ class Cli:
         optional = optional[1:]
         return operation, optional, args
 
-    """
-        Display the correctly and splitted operation
-    """
-
     def opShow(self, opList):
+        """
+            Display the correctly and splitted operation
+        """
         op, opt, args = self.opSplit(opList)
         print('   The operations is: ', op)
         if opt == []:
@@ -124,10 +120,9 @@ class Cli:
                 print('   ✅          -->  args[', count, ']: ', args[count - 1])
                 count += 1
 
-    """
-        When operation have typed in, analyse the Major oper and enter specific module
-    """
-
     def opSelect(self):
+        """
+            When operation have typed in, analyse the Major oper and enter specific module
+        """
         print('opSelect(self)')
     # to do
