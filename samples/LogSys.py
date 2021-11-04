@@ -20,15 +20,13 @@ class Log:
         path = path + date
         file = open(path, "a+")
         str = self.getTime() + " Operation: " + cmd_str + '\n'
-        # str = "test writeHistory()"
+        # str = ".test writeHistory()"
         file.write(str)
         file.close()
-
 
     def getTime(self):
         return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
+
 if __name__ == '__main__':
     log = Log()
-
-
