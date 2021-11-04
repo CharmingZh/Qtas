@@ -16,6 +16,6 @@ def cal_sha1(message):
 
 
 if __name__ == '__main__':
-    ' For test stuff, ... '
+    ' For .test stuff, ... '
     print(" Calling cal_sha1(): ", cal_sha1('Python 3000'))
     print(" Calling hashlib's : ", '57065656bf4e4803789bbc52cfd63edf0533d55b')
