@@ -63,7 +63,7 @@ def new(algorithm, message):
     return obj
 
 
-def sha1(message):
+def sha_1(message):
     ''' Returns a new sha1 hash object '''
     return new('sha1', message)
 
@@ -82,8 +82,8 @@ if __name__ == '__main__':
         os.urandom(1200),
     ]
     for i in vectors:
-        print(sha1(i).hexdigest())
-        assert hashlib.sha1(i).hexdigest() == sha1(i).hexdigest()
-        assert hashlib.sha1(i).digest() == sha1(i).digest()
+        print(sha_1(i).hexdigest())
+        assert hashlib.sha1(i).hexdigest() == sha_1(i).hexdigest()
+        assert hashlib.sha1(i).digest() == sha_1(i).digest()
 
     print("all tests passed")
