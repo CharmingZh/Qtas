@@ -1,5 +1,6 @@
-import cepher
+import Cepher
 import Network
+
 
 class Chord_Node:
     """
@@ -13,7 +14,7 @@ class Chord_Node:
         self.fingerTable = [successor]
 
     def myprint(self, msg):
-        print(cepher.cal_sha1(msg))
+        print(Cepher.cal_sha1(msg))
     # to do
 
 class Chord_DHT:
@@ -27,4 +28,4 @@ if __name__ == '__main__':
     node = Chord_Node(1)
     print(node.IP)
     node.myprint(node.IP)
-    print(type(cepher.cal_sha1(node.IP)))
+    print(type(Cepher.cal_sha1(node.IP)))
