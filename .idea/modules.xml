@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/fQtas.iml" filepath="$PROJECT_DIR$/.idea/fQtas.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/Qtas.iml" filepath="$PROJECT_DIR$/.idea/Qtas.iml" />
     </modules>
   </component>
 </project>
