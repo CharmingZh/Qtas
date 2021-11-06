@@ -37,12 +37,12 @@ class Cli:
             print("operation [optional] (arg_1) (arg_2)")
             # to do
 
-    """
-        Display the prompt sign, and read the operation user typed in
-    """
 
     def cliPrompt(self):
-        # [Net state] < user's name > ( current working path ) >>> _type operation here_
+        """
+            Display the prompt sign, and read the operation user typed in
+            [Net state] < user's name > ( current working path ) >>> _type operation here_
+        """
         log = Log()
         prompt_str = "[" + self.connStat + "] <" + self.usrName + "> ( " + self.curPath + " ) >>> "
         command_str = input(prompt_str)
@@ -50,9 +50,6 @@ class Cli:
         oper, opt, args = self.opSplit(command_list)
         # self.opShow(command_list)
         log.writeHistory(oper)
-        if oper == 'exit':
-            print("Bye ~")
-            sys.exit()
         return oper, opt, args
 
     def opRead(self, opStdin):
@@ -120,9 +117,23 @@ class Cli:
                 print('   ✅          -->  args[', count, ']: ', args[count - 1])
                 count += 1
 
-    def opSelect(self):
+    def opSelect(self, oper, opt, args):
         """
             When operation have typed in, analyse the Major oper and enter specific module
         """
-        print('opSelect(self)')
+        if oper == 'exit':
+            print("Bye ~")
+            sys.exit()
+        elif oper == 'man':
+            self.manPage(oper, args)
+
+    def manPage(self, oper, args):
+        """
+            *nix style man page, ignore args[i] except the first one
+        """
+        if args == []:
+            print("What manual page do you want?")
+            print("For example, try 'man man'.")
+        else:
+            print(oper, args[0])
     # to do
