@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+# @Time    : 2021/11/6 3:39 下午
+# @Author  : Jiaming Zhang
+# @FileName: Rfile.py
+# @Github  ：https://github.com/CharmingZh
+
 class SHA1(object):
     _h0, _h1, _h2, _h3, _h4, = (
         0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0)

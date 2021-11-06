@@ -1,4 +1,8 @@
 
+> @Time    : 2021/11/6 3:45 下午\
+@Author  : Jiaming Zhang\
+@FileName: test3.md\
+@Github  : https://github.com/CharmingZh
 
 ```python
 # 从Thread类继承
