@@ -330,7 +330,3 @@ def cal_sha1(message: str, mode: int = 1):
     return sha1_data
 """
 
-if __name__ == '__main__':
-    ' For .test stuff, ... '
-    print(" Calling cal_sha(): ", cal_sha('Python 3000', 1))
-    print(" Calling hashlib's : ", '57065656bf4e4803789bbc52cfd63edf0533d55b')

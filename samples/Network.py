@@ -2,23 +2,14 @@ import time
 from socket import *
 import threading
 import random
+import os
 
 
 # import Cepher
 # from settings import SIZE
 
+BUFSIZE = 10
 
-
-def gen_port(num=1):
-    """
-        Generate a port number or a list
-    """
-    ports_list = [random.randrange(10000, 60000) for x in range(num)]
-    if num == 1:
-        # s.bind((Network.get_ip(4), 0)) is enough
-        return ports_list[0]
-    else:
-        return ports_list
 
 
 def get_ip(version=4):
@@ -26,12 +17,10 @@ def get_ip(version=4):
         Get the IP addr of the client
     """
     if version == 4:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s = socket(AF_INET, SOCK_STREAM)
         s.connect(('1.1.1.1', 80))
         IP = s.getsockname()[0]
-        print('1', s.getsockname()[1])
         s.close()
-        print('socket has closed')
         # return socket.gethostbyname(socket.gethostname()) # some times return 127.*
         return IP
     elif version == 6:
@@ -43,24 +32,48 @@ def get_ip(version=4):
 
 class Server(threading.Thread):
     def __init__(self, port, version):
+        """ 创建一个 socket """
         threading.Thread.__init__(self)
-        self.setDaemon(True)
+        self.setDaemon(True) # 守护线程
         self.address = (get_ip(version), port)
         if version == 4:
+            #self.sock = socket(AF_INET, SOCK_STREAM)
             self.sock = socket(AF_INET, SOCK_STREAM)
         elif version == 6:
             self.sock = socket(AF_INET6, SOCK_STREAM)
-
+        print("server socket get")
     def __del__(self):
         self.sock.close()
+        print("server socket close")
         # to do
 
     def run(self):
         print("server start ...")
         self.sock.bind(self.address)
-        self.sock.listen(1)
+        print("server bind")
+        self.sock.listen(5)
+        print('server listen')
         conn, addr = self.sock.accept()
         print("remote client success connected ...")
+        while True:
+            data = conn.recv(BUFSIZE)
+            print('Server recv:', data.decode("utf-8"))
+            if not data:
+                break
+            file_name = data.decode('utf-8')
+            if os.path.exists(file_name):
+                file_size = str(os.path.getsize(file_name))
+                print("Server file size of", file_name, "is ", file_size)
+                conn.send(file_size.encode())
+                data = conn.recv(BUFSIZE)
+                print("server start trans")
+                f = open(file_name, "rb")
+                for line in f:
+                    conn.send(line)
+                f.close()
+            else:
+                conn.send("0001".encode())
+
         # to do
 
 
@@ -73,10 +86,12 @@ class Client(threading.Thread):
             self.sock = socket(AF_INET, SOCK_STREAM)
         elif version == 6:
             self.sock = socket(AF_INET6, SOCK_STREAM)
-        # to do
 
     def __del__(self):
         self.sock.close()
+        print('client socket close')
+        self.file.close()
+        print('client file close')
         # to do
 
     def run(self):
@@ -99,14 +114,39 @@ class Client(threading.Thread):
             print("test", timer, "seconds")
             timer -= 1
             time.sleep(1)
-
         # to do
     # to do
 
 
+def gen_port(num=1):
+    """
+        Generate a port number or a list
+    """
+    ports_list = [random.randrange(10000, 60000) for x in range(num)]
+    if num == 1:
+        # s.bind((Network.get_ip(4), 0)) is enough
+        return ports_list[0]
+    else:
+        return ports_list
+
+def gen_port_file():
+    port_pool = gen_port(100)
+    fwrite = open("data/.port_list", "w")
+    for item in port_pool:
+        fwrite.write(str(item) + "\r\n")
+    fwrite.close()
+
+def get_port():
+    port_list = []
+    file = open("data/.port_list", "r")
+    for port in file.readlines():
+        print(port)
+        port = port[:-1]
+        print(port)
+        port_list.append(port)
+    file.close()
+    return port_list
+
 if __name__ == '__main__':
-    ip = get_ip()
-    print(ip)
-    print("gen ports")
-    print(gen_port(1))
-    print(gen_port(10))
+    print(get_ip())
+

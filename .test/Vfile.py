@@ -1,18 +1,21 @@
+import _io
 import os
 
 class File:
     def __init__(self, Name):
-        try:
-            self.file = open(Name, 'r')
-        except:
-            print("No such file error")
-            self.__del__()
         self.name = Name
-        self.size = os.path.getsize(self.name)
-        self.path = os.path.relpath(self.name)
 
-    def __del__(self):
-        self.file.close()
+    def open_file(self, name):
+        try:
+            self.pfile = open(name, 'r')
+            print('file open')
+        except:
+            print("open_file fail")
+
+    def close_file(self):
+        print('start close')
+        self.pfile.close()
+        print('file closed')
 
     def read_file(self):
         print("read file")
