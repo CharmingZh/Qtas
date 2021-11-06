@@ -1,3 +1,7 @@
+import hashlib
+import os
+
+
 class SHA1(object):
     _h0, _h1, _h2, _h3, _h4, = (
         0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0)
@@ -305,7 +309,7 @@ def sha512(message):
     return new('sha512', message)
 
 
-def cal_sha(message: str, mode: int):
+def calSha(message, mode):
     message = message.encode('utf-8')
     if mode == 1:
         return sha_1(message).hexdigest()
@@ -315,22 +319,35 @@ def cal_sha(message: str, mode: int):
         return sha512(message).hexdigest()
 
 
-"""
-    # old version
-    # Trans the str into its SHA-1 style
-    #   :param message: a str
-    #   :return: 160 bits SHA-1 encoded str
-def cal_sha1(message: str, mode: int = 1):
-    
-    sha1 = hashlib.sha1()
-    data = message
-    sha1.update(data.encode('utf-8'))
-    sha1_data = sha1.hexdigest()
-    # print(sha1_data, ', length = ', len(sha1_data), 'Bytes')
-    return sha1_data
-"""
-
 if __name__ == '__main__':
-    ' For .test stuff, ... '
-    print(" Calling cal_sha(): ", cal_sha('Python 3000', 1))
-    print(" Calling hashlib's : ", '57065656bf4e4803789bbc52cfd63edf0533d55b')
+
+    vectors = [
+        b'',
+        b'abc',
+        b'The quick brown fox jumped over the lazy dog',
+        b'The quick brown fox jumped over the lazy dog.',
+        b"abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq",
+        b'Python 3000',  # 57065656bf4e4803789bbc52cfd63edf0533d55b
+        os.urandom(1200),
+    ]
+    for i in vectors:
+        print(sha_1(i).hexdigest())
+        assert hashlib.sha1(i).hexdigest() == sha_1(i).hexdigest()
+        assert hashlib.sha1(i).digest() == sha_1(i).digest()
+        assert hashlib.sha512(i).digest() == sha512(i).digest()
+        assert hashlib.sha256(i).digest() == sha256(i).digest()
+
+    print("all tests passed")
+    print(sha512(b"Zhangxiaoling").hexdigest())
+    print(sha512(b"Zhangxiaoling").digest())
+    print(sha512("Zhangxiaoling".encode('utf-8')).digest())
+
+    print(calSha("Zhangxiaoling", 512))
+
+"""
+    assert hashlib.sha1("Zhangxiaoling".encode('utf-8')).hexdigest() == sha_1("Zhangxiaoling").hexdigest()
+    assert hashlib.sha1("Zhangxiaoling".encode('utf-8')).digest() == sha_1("Zhangxiaoling").digest()
+    assert hashlib.sha512("Zhangxiaoling".encode('utf-8')).digest() == sha512("Zhangxiaoling").digest()
+    assert hashlib.sha256("Zhangxiaoling".encode('utf-8')).digest() == sha256("Zhangxiaoling").digest()
+    print("all tests passed222")
+"""
