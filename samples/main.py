@@ -10,8 +10,9 @@ import os
 '''
     project implemented
 '''
-from Interface import Cli
-from Vfile import File
+from Interface import *
+from Vfile import *
+import Cepher
 
 if __name__ == '__main__':
     """
@@ -23,13 +24,9 @@ if __name__ == '__main__':
     cli = Cli()
     cli.printLogo()
     cli.cliHelp(all)
-
     # s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
     # s.connect()
     while True:
-        cli.cliPrompt()
-    """
-    parser = argparse.ArgumentParser()
-    args = parser.parse_args()
-    print('IP = ', args.host)
-    """
+        oper, opt, args = cli.cliPrompt()
+        cli.opSelect(oper, opt, args)
+
