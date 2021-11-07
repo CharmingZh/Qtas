@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2021/11/6 3:39 下午
 # @Author  : Jiaming Zhang
-# @FileName: Rfile.py
+# @FileName: Network.py
 # @Github  ：https://github.com/CharmingZh
 
 import time
@@ -10,12 +10,17 @@ import threading
 import random
 import os
 
-
 # import Cepher
 # from settings import SIZE
 
 BUFSIZE = 10
 
+
+def curNetInfo(sock: socket, version=4):
+    if version == 4:
+        print('current IP address is : ', sock[4][0])
+        print('cureent PORT using is : ', sock[4][1])
+    return sock[4][0], sock[4][1]
 
 
 def get_ip(version=4):
@@ -36,18 +41,56 @@ def get_ip(version=4):
         print("version type wrong")
 
 
+def gen_port(num=1):
+    """
+        Generate a port number or a list
+    """
+    ports_list = [random.randrange(10000, 60000) for x in range(num)]
+    if num == 1:
+        # s.bind((Network.get_ip(4), 0)) is enough
+        return ports_list[0]
+    else:
+        return ports_list
+
+
+def gen_port_file():
+    port_pool = gen_port(100)
+    fwrite = open("data/.port_list", "w")
+    for item in port_pool:
+        fwrite.write('N' + str(item) + "\r\n")
+        # 第一位为 N 为未使用端口，Y 为已占用端口
+    fwrite.close()
+
+
+def get_port():
+    port_list = []
+    file = open("data/.port_list", "r")
+    for port in file.readlines():
+        print(port)
+        port = port[:-1]
+        print(port)
+        port_list.append(port)
+    file.close()
+    return port_list
+
+
+def test():
+    print()
+
+
 class Server(threading.Thread):
     def __init__(self, port, version):
         """ 创建一个 socket """
         threading.Thread.__init__(self)
-        self.setDaemon(True) # 守护线程
+        self.setDaemon(True)  # 守护线程
         self.address = (get_ip(version), port)
         if version == 4:
-            #self.sock = socket(AF_INET, SOCK_STREAM)
+            # self.sock = socket(AF_INET, SOCK_STREAM)
             self.sock = socket(AF_INET, SOCK_STREAM)
         elif version == 6:
             self.sock = socket(AF_INET6, SOCK_STREAM)
         print("server socket get")
+
     def __del__(self):
         self.sock.close()
         print("server socket close")
@@ -124,35 +167,5 @@ class Client(threading.Thread):
     # to do
 
 
-def gen_port(num=1):
-    """
-        Generate a port number or a list
-    """
-    ports_list = [random.randrange(10000, 60000) for x in range(num)]
-    if num == 1:
-        # s.bind((Network.get_ip(4), 0)) is enough
-        return ports_list[0]
-    else:
-        return ports_list
-
-def gen_port_file():
-    port_pool = gen_port(100)
-    fwrite = open("data/.port_list", "w")
-    for item in port_pool:
-        fwrite.write(str(item) + "\r\n")
-    fwrite.close()
-
-def get_port():
-    port_list = []
-    file = open("data/.port_list", "r")
-    for port in file.readlines():
-        print(port)
-        port = port[:-1]
-        print(port)
-        port_list.append(port)
-    file.close()
-    return port_list
-
 if __name__ == '__main__':
     print(get_ip())
-

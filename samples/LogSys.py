@@ -7,7 +7,6 @@
 import errno
 import os
 import time
-import Interface
 
 
 class Log:
@@ -17,12 +16,13 @@ class Log:
             2. Error check system check
             3. System stability required
     """
+    def __init__(self, path:str):
+        self.Path = path
 
     def writeHistory(self, cmd_str):
         date_full = self.getTime()
         date = date_full[:10]
-        path = os.getcwd()
-        path = path + "/samples/.log/"
+        path = self.Path + "/samples/.log/"
         path = path + date
         file = open(path, "a+")
         str = self.getTime() + " Operation: " + cmd_str + '\n'

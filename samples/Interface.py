@@ -1,21 +1,26 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2021/11/6 3:39 下午
 # @Author  : Jiaming Zhang
-# @FileName: Rfile.py
+# @FileName: Interface.py
 # @Github  ：https://github.com/CharmingZh
 
 import sys
 from LogSys import Log
+import Rfile
+from Network import *
 
 
-class Cli:
+class Cli():
     """
         Class Cli include stuffs relating to menu stuff, user's interface looking ...
     """
-    curPath = '/root'
-    connStat = 'Offline'
-    usrName = 'Rrrrraulista'
 
+    """
+    def __init__(self, Stat: str, Name: str, Path: str):
+        self.connStat = Stat
+        self.usrName = Name
+        self.curPath = Path
+    """
     def printLogo(self):
         """
             just print a beautiful logo
@@ -44,18 +49,31 @@ class Cli:
             # to do
 
 
-    def cliPrompt(self):
+    def pathShade(self, path: str):
+        # 用户对 储存目录（Storage/[root]）以上的文件不可访问，不可见
+        ret = 'root'
+        path_list = path.split('/')
+        count = 0
+        for item in path_list:
+            count += 1
+            if item == 'Storage':
+                break
+        for i in (range(len(path_list) - count)):
+            ret = ret + '/' + path_list[count + i]
+        return ret
+
+    def cliPrompt(self, Stat: str, Name: str, Path: str):
         """
             Display the prompt sign, and read the operation user typed in
             [Net state] < user's name > ( current working path ) >>> _type operation here_
         """
-        log = Log()
-        prompt_str = "[" + self.connStat + "] <" + self.usrName + "> ( " + self.curPath + " ) >>> "
-        command_str = input(prompt_str)
+        # prompt_str = "[" + Stat + "] <" + Name + "> ( " + Path + " ) >>> "
+        prompt_str_short = "👸 [" + Stat + "] <" + Name + "> ( " + self.pathShade(Path) + " ) >>> "
+        # print(prompt_str_short)
+        command_str = input(prompt_str_short)
         command_list = self.opRead(command_str)
         oper, opt, args = self.opSplit(command_list)
         # self.opShow(command_list)
-        log.writeHistory(oper)
         return oper, opt, args
 
     def opRead(self, opStdin):
@@ -132,6 +150,36 @@ class Cli:
             sys.exit()
         elif oper == 'man':
             self.manPage(oper, args)
+            return 0
+        elif oper == 'pwd':
+            print(Rfile.pwd())
+            return 0
+        elif oper == 'cd':
+            retVal = Rfile.cd(args)
+            return retVal
+        elif oper == 'tree':
+            if args == []:
+                print('[list contents of directories in a tree-like format.]')
+                Rfile.tree('.')
+                return 0
+            print('[list contents of directories in a tree-like format.]')
+            args = args[0]
+            Rfile.tree(args)
+            return 0
+        elif oper == 'ls':
+            """
+            if args == []:
+                Rfile.ls()
+            else:
+                Rfile.ls(args[0])
+                
+                TO DO, delete this part for secure accessing
+            """
+            Rfile.ls()
+            return 0
+        else:
+            return 0
+
 
     def manPage(self, oper, args):
         """
