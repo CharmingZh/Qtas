@@ -129,13 +129,7 @@ if __name__ == '__main__':
     thread_servListen.start()
     # thread_servAccept.start()
 
-    epoll = select.epoll()  # 创建1个epoll对象
-
     system_thread = []  # System maintaining thread list
-    epoll.register(sock.fileno(), select.EPOLLIN | select.EPOLLET)  # 将创建的套接字添加到epoll的事件监听中
-
-    connections = {}
-    addresses = {}
 
     system_thread.append(thread_servListen)
     # system_thread.append(thread_servAccept)
@@ -155,6 +149,8 @@ if __name__ == '__main__':
     # s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
     # s.connect()
     while True:
+        conn, Raddr = sock.accept()
+        print("connected...")
         oper, opt, args = cli.cliPrompt(CONNSTAT[0], USERNAME, CURPATH)
         log.writeHistory(oper)
         retVal = cli.opSelect(oper, opt, args)
@@ -162,29 +158,3 @@ if __name__ == '__main__':
             retVal = retHandle(retVal)
         showNet()
         cli.pathShade(CURPATH)
-
-
-        epoll_list = epoll.poll()  # epoll 进. fd 扫描的地. -- 未指定超时时间则为阻塞等待
-        # 对事件进.判断
-        for fd, events in epoll_list:
-            # 如果是socket创建的套接字被激活
-            if fd == sock.fileno():
-                Rconn, Raddr = sock.accept()
-                print('有新的客户端到来%s' % str(addr))
-
-                connections[Rconn.fileno()] = Rconn  # 将 conn 和 addr 信息分别保存起来
-                addresses[Rconn.fileno()] = addr
-
-                epoll.register(Rconn.fileno(), select.EPOLLIN | select.EPOLLET)  # 向 epoll 中注册 连接 socket 的 可读 事件
-
-            elif events == select.EPOLLIN:
-                recvData = connections[fd].recv(1024)
-                if len(recvData) > 0:
-                    print('recv:%s' % recvData)
-                else:
-                    epoll.unregister(fd)  # 从 epoll 中移除该 连接 fd
-
-                # server 侧主动关闭该 连接 fd
-                connections[fd].close()
-
-                print("%s---offline---" % str(addresses[fd]))
