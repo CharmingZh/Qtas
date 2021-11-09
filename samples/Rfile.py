@@ -23,7 +23,8 @@ def cd(args: list):
     check = os.getcwd()
     check = check.split("/")
 
-    if check[-1] == "Storage" and args_str == '..' or args_str[0] == '.' and args_str[1] == '.':
+    if check[-1] == "Storage" and args_str == '..' \
+            or args_str[0] == '.' and args_str[1] == '.' and check[-1] == "Storage":
         # 不可以访问根目录上层，retHandle 情况 0，除提示外不做任何操作
         print("❌ ERROR : You are already in the root dir!")
         return 0
