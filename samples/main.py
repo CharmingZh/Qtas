@@ -43,8 +43,8 @@ CONN_LIST = []
 sock = socket(AF_INET, SOCK_STREAM)
 sock.setblocking(False)  # 设置为非阻塞
 sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)  # 设置可以重复使.绑定的信息
-# addr = (get_ip(4), 23180)
-addr = ('127.0.0.1', 23180)
+addr = (get_ip(4), 23180)
+# addr = ('127.0.0.1', 23180)
 sock.bind(addr)
 
 def listenImpletement(sock:socket, num: int):
