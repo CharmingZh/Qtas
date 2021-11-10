@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="66632224-e0eb-4dc5-a8d1-22f1b77f7c6d" name="10.211.55.12">
+        <fileTransfer rootFolder="/home/parallels/PycharmProjects" accessType="SFTP" host="10.211.55.12" port="22" sshConfigId="86e97e2c-1755-49fa-8e4a-7711ba620c68" sshConfig="parallels@10.211.55.12:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

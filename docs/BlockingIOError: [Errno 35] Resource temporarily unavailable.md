@@ -35,33 +35,35 @@ unavailable，errno 代码为11(EAGAIN)，这是什么意思？
 二、BlockingIOError
 
 首先，我想知道 python 中的 BlockingIOError 具体指什么。
-在 python 官方文档中，找到了对 BlockingIOError 异常的说明，如下：
+在 python 官方文档中，找到了对 ```BlockingIOError``` 异常的说明，如下：
 
 exception BlockingIOError:
 
-> `Raised when an operation would block on an object (e.g. socket) 
-> set for non-blocking operation. Corresponds to errno EAGAIN, 
-> EALREADY, EWOULDBLOCK and EINPROGRESS.`
+```shell
+Raised when an operation would block on an object (e.g. socket) set 
+for non-blocking operation. Corresponds to errno EAGAIN, EALREADY, 
+EWOULDBLOCK and EINPROGRESS.
+```
 
-linux 下，BlockingIOError: [Errno 11] 即为 EAGAIN 错误。
+linux 下，```BlockingIOError: [Errno 11]``` 即为 ```EAGAIN``` 错误。
 
-windows 上，EAGAIN 的名字叫做 EWOULDBLOCK。对应的报错信息为：
-“BlockingIOError: [WinError 10035] 无法立即完成一个非阻止性套接字操作”。
+windows 上，```EAGAIN``` 的名字叫做 ```EWOULDBLOCK```。对应的报错信息为：
+```“BlockingIOError: [WinError 10035] 无法立即完成一个非阻止性套接字操作”```。
 
 官网的这个说明，依然没让我明白为什么会出现“资源不可用”。但它大概描述了如何触发 EAGAIN，于是我决定复现它，继续研究。
 
 三、EAGAIN 复现
 
-据我了解，可以触发 EAGAIN 错误的操作有：accept()、recv()、send()。
+据我了解，可以触发 EAGAIN 错误的操作有：```accept()```、```recv()```、```send()```。
 
-connect() 方法也会阻塞，但返回的是 EINPROGRESS 错误，表示连接操作正在进行中，但是仍未完成。
+```connect()``` 方法也会阻塞，但返回的是 EINPROGRESS 错误，表示连接操作正在进行中，但是仍未完成。
 
-因此，我在 linux 下使用 python3，分别复现三种函数触发 EAGAIN 异常。
+因此，我在 linux 下使用 python3，分别复现三种函数触发 ```EAGAIN``` 异常。
 
-3.1、accept() 触发
+3.1、```accept() ```触发
 
-accept() 触发很简单，一个程序就能完成，代码如下：
-
+```accept()``` 触发很简单，一个程序就能完成，代码如下：
+```python
 # _*_ coding:utf-8 _*_
 """
 tcp服务端
@@ -81,8 +83,9 @@ def tcp_server():
 
 if __name__ == '__main__':
     tcp_server()
+```
 运行代码，报错如下：
-
+```shell
 Traceback (most recent call last):
   File "tcp_server.py", line 19, in <module>
     tcp_server()
@@ -91,24 +94,16 @@ Traceback (most recent call last):
   File "/usr/lib64/python3.6/socket.py", line 205, in accept
     fd, addr = self._accept()
 BlockingIOError: [Errno 11] Resource temporarily unavailable
+```
 
-1
-2
-3
-4
-5
-6
-7
-8
-9
-可以看到，在 server.accept() 时，触发了 [Errno 11]。
+可以看到，在 ```server.accept()``` 时，触发了 ```[Errno 11]```。
 
-3.2、recv() 触发
+3.2、```recv() ```触发
 
-recv() 触发，需要两个程序，一个服务端，一个客户端。在服务端 recv() 客户端发送的消息时，触发异常。
+```recv()``` 触发，需要两个程序，一个服务端，一个客户端。在服务端 ```recv()``` 客户端发送的消息时，触发异常。
 
 服务端代码，如下：
-
+```python
 # _*_ coding:utf-8 _*_
 """
 tcp服务端
@@ -130,29 +125,9 @@ def tcp_server():
 
 if __name__ == '__main__':
     tcp_server()
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
+```
 客户端代码，如下：
-
+```python
 # _*_ coding:utf-8 _*_
 """
 tcp客户端
@@ -170,47 +145,30 @@ def tcp_client():
 
 if __name__ == '__main__':
     tcp_client()
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
+```
+
 首先，执行服务端代码；然后，执行客户端代码访问服务端，服务端将触发错误。
 
 服务端，报错如下：
-
+```shell
 Traceback (most recent call last):
   File "tcp_server.py", line 21, in <module>
     tcp_server()
   File "tcp_server.py", line 17, in tcp_server
     cli.recv(1024)
 BlockingIOError: [Errno 11] Resource temporarily unavailable
-1
-2
-3
-4
-5
-6
-可以看到，在服务端 recv(1024)时，触发了 [Errno 11]。
+```
 
-3.3、send() 触发
+可以看到，在服务端``` recv(1024)```时，触发了 ```[Errno 11]```。
 
-send() 触发，同样需要一个服务端和一个客户端。当服务端接收客户端连接后，不及时 recv() 客户端的消息，在 while 循环中 sleep()。这会导致客户端多次发送消息后，在 send() 函数触发异常。
+3.3、```send()``` 触发
+
+`send()` 触发，同样需要一个服务端和一个客户端。当服务端接收客户端连接后，
+不及时 `recv()` 客户端的消息，在 `while` 循环中 `sleep()`。这会导致客户端多次发送消息后，
+在 `send()` 函数触发异常。
 
 服务端代码，如下：
-
+```python
 # _*_ coding:utf-8 _*_
 """
 tcp服务端
@@ -232,29 +190,9 @@ def tcp_server():
 
 if __name__ == '__main__':
     tcp_server()
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
+```
 客户端代码，如下：
-
+```python
 # _*_ coding:utf-8 _*_
 """
 tcp客户端
@@ -277,35 +215,11 @@ def tcp_client():
 
 if __name__ == '__main__':
     tcp_client()
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
+```
 首先，运行服务端程序；然后，运行客户端程序，访问服务端。
 
 客户端在多次 send() 后，报错如下：
-
-    .
-    .
-    .
+```shell
 send data success.
 send data success.
 send data success.
@@ -315,92 +229,104 @@ Traceback (most recent call last):
   File "tcp_client.py", line 14, in tcp_client
     client.send('hello world!'.encode())
 BlockingIOError: [Errno 11] Resource temporarily unavailable
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-可以看到，客户端在很多次 send() 后，触发了 [Errno 11]。
+```
+可以看到，客户端在很多次 `send()` 后，触发了 `[Errno 11]`。
 
 四、原因分析
 
-从 accept 和 recv 的触发来看，“答案二”似乎更正确，即：
+从 `accept` 和 `recv` 的触发来看，“答案二” 似乎更正确，即：
 
-“在非阻塞模式下调用了阻塞操作，在该操作没有完成就返回这个错误”。
+> “在非阻塞模式下调用了阻塞操作，在该操作没有完成就返回这个错误”。
 
-但是，从 send 的触发来看，send 了很多次后，才会触发 [Errno 11]。“答案一”好像更有道理，即：
+但是，从 `send` 的触发来看，`send` 了很多次后，才会触发 `[Errno 11]`。
+“答案一”好像更有道理，即：
 
-“由于是异步的，write\send 将要发送的数据提交到发送缓冲区后是立即返回的，并不需要对端确认数据已接收。在这种情况下是很有可能出现发送缓冲区被填满，导致 write\send 无法再向缓冲区提交要发送的数据。因此就产生了 Resource temporarily unavailable 的错误。”。
+> “由于是异步的，`write\send` 将要发送的数据提交到发送缓冲区后是立即返回的，
+> 并不需要对端确认数据已接收。在这种情况下是很有可能出现发送缓冲区被填满，
+> 导致 `write\send` 无法再向缓冲区提交要发送的数据。因此就产生了 
+> Resource temporarily unavailable 的错误。”。
 
-两种答案看着都有自己的道理，但我还是没明白，它们和“资源暂时不可用”有什么关联。
+两种答案看着都有自己的道理，但我还是没明白，它们和`“资源暂时不可用”`有什么关联。
 
-为什么 EAGAIN 异常给出的提示信息是“[Errno 11] Resource temporarily unavailable”呢？
+为什么 `EAGAIN` 异常给出的提示信息是
+“[Errno 11] Resource temporarily unavailable”呢？
 
-继续研究分析后，我得出了自己的结论，依然按照accept()、recv()、send()三个函数来分析说明。
+继续研究分析后，我得出了自己的结论，依然按照`accept()、recv()、send()`三个函数来分析说明。
 
-4.1、accept() 分析
+4.1、`accept()` 分析
 
-当我们创建一个 socket 监听某个端口后，所有完成三次握手的客户端连接，都会按照到达先后顺序被放入主线 socket 的等待连接队列中。先放入的先被取出
+- 当我们创建一个 socket 监听某个端口后，所有完成三次握手的客户端连接，
+都会按照到达先后顺序被放入主线 socket 的等待连接队列中。先放入的先被取出;
 
-当 socket 执行 listen() 后，可以调用 accept() 函数从等待连接队列中取出一个连接请求，并创建一个新的 socket 用于与客户端通信，然后返回。
+- 当 socket 执行 `listen()` 后，可以调用 `accept()` 函数从等待连接队列中
+  取出一个连接请求，并创建一个新的 socket 用于与客户端通信，然后返回。
 
-阻塞模式下，主线 socket 调用 accept 后，如果等待队列中没有新的请求，就会一直阻塞，直到可以从队列中取出新的请求才返回。
-
-非租塞模式下，如果等待队列中没有可取的连接，accept() 也会立马返回，并抛出 BlockingIOError: [Errno 11] Resource temporarily unavailable 异常。
+  - 阻塞模式下，主线 socket 调用 accept 后，如果等待队列中没有新的请求，
+  就会一直阻塞，直到可以从队列中取出新的请求才返回。
+  
+  - 非租塞模式下，如果等待队列中没有可取的连接，`accept()` 也会立马返回，
+    并抛出 BlockingIOError: [Errno 11] Resource temporarily unavailable 
+    异常。
 
 此时，我理解的资源不可用，是指等待连接队列中没有数据可取！
 
 如果，等待连接队列中有新连接可取，阻塞模式和非阻塞模式下的 accept() 是没有区别的。
 
-4.2、recv() 分析
+4.2、`recv()` 分析
 
-socekt 调用 recv() 接收消息时，并不是直接从对端 socket 获取数据，而是从接收缓冲区读取数据。
+socekt 调用 `recv()` 接收消息时，并不是直接从对端 socket 获取数据，而是从接收缓冲区读取数据。
 
-阻塞模式下，如果接收缓冲区没有数据可读，recv() 会一直阻塞，直到有数据可读。
+- 阻塞模式下，如果接收缓冲区没有数据可读，`recv()` 会一直阻塞，直到有数据可读。
 
-非阻塞模式下，recv() 从接收缓冲区读取数据时，如果没有数据，也会立马返回，并抛出 BlockingIOError: [Errno 11] Resource temporarily unavailable 异常。
+
+- 非阻塞模式下，`recv()` 从接收缓冲区读取数据时，如果没有数据，也会立马返回，
+  并抛出 BlockingIOError: [Errno 11] Resource temporarily unavailable 异常。
 
 此时，我理解的资源不可用，是指接收缓冲区没有数据可读！
 
 如果，接收缓冲区中有数据可读，阻塞模式和非阻塞模式下的 recv() 是没有区别的。
 
-4.3、send() 分析
+4.3、`send()` 分析
 
-socket 使用 send() 方法发送数据时，会先将数据提交到发送缓冲区，由内核通过网络发送出去。
+socket 使用 `send()` 方法发送数据时，会先将数据提交到发送缓冲区，
+由内核通过网络发送出去。
 
-在阻塞模式下，send() 操作会等待所有数据均被复制到发送缓冲区后才会返回。
+- 在阻塞模式下，`send()` 操作会等待所有数据均被复制到发送缓冲区后才会返回。
 
-例如，如果发送缓冲总大小为 1024，现在已经复制了 1023 个字节到发送缓冲区，那么剩余的可用发送缓冲区大小为 1 字节。如果继续发送数据，执行下一个 send() 操作，并且 send 的数据长度大于 1。此时，send() 中的待发送数据是无法全部被写入到发送缓冲区的，send() 将会阻塞，直到内核取走发送缓冲区中部分数据，send() 的所有数据全部被写入发送缓冲区后才返回。
+例如，如果发送缓冲总大小为 1024，现在已经复制了 1023 个字节到发送缓冲区，
+那么剩余的可用发送缓冲区大小为 1 字节。如果继续发送数据，执行下一个 send() 操作，
+并且 send 的数据长度大于 1。此时，send() 中的待发送数据是无法全部被写入到
+发送缓冲区的，send() 将会阻塞，直到内核取走发送缓冲区中部分数据，send() 
+的所有数据全部被写入发送缓冲区后才返回。
 
-使用 sock.getsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF) 可以查看 socket 的 发送缓冲区大小。
+使用 `sock.getsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF)` 
+可以查看 socket 的发送缓冲区大小。
 
-非阻塞模式下，send() 发送数据时，如果发送缓冲区可用大小不足以支持 send() 写入全部数据，send() 方法也会立马返回，并抛出 BlockingIOError: [Errno 11] Resource temporarily unavailable 异常。
+- 非阻塞模式下，send() 发送数据时，如果发送缓冲区可用大小不足以支持 
+  `send()` 写入全部数据，send() 方法也会立马返回，
+  并抛出 BlockingIOError: [Errno 11] Resource temporarily unavailable 
+  异常。
 
 通过前面 send() 方法触发异常的代码，可以看到在服务端一直没有读取网络数据，导致客户端发送缓冲区中数据处理不及时，而客户端又在循环发送大量数据，当发送缓冲区被写满后，继续发送数据触发了资源不可用异常。
 
 此时，我理解的资源不可用，是指发送缓冲区没有足够空间可用！
 
-如果，发送缓冲区中还有足够空间，允许send() 函数提交指定的所有数据，阻塞模式和非阻塞模式下的 send() 是没有区别的。
+如果，发送缓冲区中还有足够空间，允许`send()` 函数提交指定的所有数据，阻塞模式和非阻塞模式下的 send() 是没有区别的。
 
 五、EAGAIN 处理
 
 知道触发 EAGAIN 的原因后，处理就比较简单了。
 
-对非阻塞 socket 而言，EAGAIN 其实不能算是真正的错误。抛出 EAGAIN 异常，只是想告诉我们稍后再试。
+对非阻塞 socket 而言，EAGAIN 其实不能算是真正的错误。
+抛出 EAGAIN 异常，只是想告诉我们稍后再试。
 
 我将 EAGAIN 的处理分为两种情况。
 
-5.1、accept()、recv() 处理
+5.1、`accept()、recv()` 处理
 
-对于 accept()，recv() 引起的 EAGAIN 异常，我们可以直接捕获异常，然后 pass 掉。
-
+对于 `accept()，recv()` 引起的 `EAGAIN` 异常，我们可以直接捕获异常，
+然后 `pass` 掉。
+```python
 # accept()处理
 try:
     client, address = sock.accept()
@@ -412,49 +338,27 @@ try:
     data = sock.recv(1024)
 except BlockingIOError as err:
     pass
-    
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-这样处理，不用担心会漏掉某些连接或数据接收。下次循环，接着 accept()、recv()，不会有任何影响。
+```
+这样处理，不用担心会漏掉某些连接或数据接收。下次循环，
+接着 `accept()、recv()`，不会有任何影响。
 
-5.2、send() 处理
+5.2、`send()` 处理
 
-对于 send() 引起的 EAGAIN 异常，不能直接 pass。作为数据发送方，直接 pass 掉 EAGAIN 会导致数据丢失。
+对于 `send()` 引起的 `EAGAIN` 异常，不能直接 `pass`。
+作为数据发送方，直接 pass 掉 EAGAIN 会导致数据丢失。
 
 我们可以，尝试 sleep(1)，给内核足够的时间取走发送缓冲区中的数据，然后再次尝试发送。
-
+```python
 try:
     sock.send('hello world!'.encode())
 except BlockingIOError as err:
     time.sleep(1)
     sock.send('hello world!'.encode())
-1
-2
-3
-4
-5
-这样的处理方式虽然简单，但不是最好的。如果接收方程序存在异常，导致接收方 recv() 的速度远远小于发送方 send() 的速度。那么，可能 sleep(1) 会导致我们的程序性能急剧下降。
+```
 
-比较好的做法是结合 poll、epoll 等，暂时保存下发送失败的数据，将对应 socket 丢入事件循环中，等待可写事件触发，再次发送。
+这样的处理方式虽然简单，但不是最好的。如果接收方程序存在异常，
+导致接收方 `recv()` 的速度远远小于发送方 `send()` 的速度。那么，
+可能 sleep(1) 会导致我们的程序性能急剧下降。
 
-事件循环的示例写出会比较长，但是不难，感兴趣的朋友可以研究研究~~ 如果有任何问题，欢迎讨论。
-
-tip：以上分析，如有问题，欢迎指正！
-
-END.
-
-原创不易，点个赞呗！
-
-如果喜欢，欢迎随意赞赏，动力支援，请作者喝奶茶 😃
-
-工作之余，喜欢写些东西，涉及编程、生活、热点 等。感兴趣的微信朋友，可以搜一搜公众号：【程序员的一天】，欢迎关注、支持，谢谢！
+比较好的做法是结合 `poll、epoll` 等，暂时保存下发送失败的数据，
+将对应 socket 丢入事件循环中，等待可写事件触发，再次发送。
