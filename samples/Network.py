@@ -5,7 +5,7 @@
 # @Github  ：https://github.com/CharmingZh
 
 import time
-from socket import *
+import socket
 import threading
 import random
 import os
@@ -28,7 +28,7 @@ def get_ip(version=4):
         Get the IP addr of the client
     """
     if version == 4:
-        s = socket(AF_INET, SOCK_STREAM)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect(('1.1.1.1', 80))
         IP = s.getsockname()[0]
         s.close()
@@ -86,9 +86,9 @@ class Server(threading.Thread):
         self.address = (get_ip(version), port)
         if version == 4:
             # self.sock = socket(AF_INET, SOCK_STREAM)
-            self.sock = socket(AF_INET, SOCK_STREAM)
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         elif version == 6:
-            self.sock = socket(AF_INET6, SOCK_STREAM)
+            self.sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
         print("server socket get")
 
     def __del__(self):
@@ -132,9 +132,9 @@ class Client(threading.Thread):
         self.setDaemon(True)
         self.address = (get_ip(version), port)
         if version == 4:
-            self.sock = socket(AF_INET, SOCK_STREAM)
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         elif version == 6:
-            self.sock = socket(AF_INET6, SOCK_STREAM)
+            self.sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
 
     def __del__(self):
         self.sock.close()

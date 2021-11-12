@@ -68,7 +68,7 @@ class Cli():
             [Net state] < user's name > ( current working path ) >>> _type operation here_
         """
         # prompt_str = "[" + Stat + "] <" + Name + "> ( " + Path + " ) >>> "
-        prompt_str_short = "👸 [" + Stat + "] <" + Name + "> ( " + self.pathShade(Path) + " ) >>> "
+        prompt_str_short = "\n👸 [" + Stat + "] <" + Name + "> ( " + self.pathShade(Path) + " ) >>> "
         # print(prompt_str_short)
         command_str = input(prompt_str_short)
         command_list = self.opRead(command_str)
@@ -187,7 +187,21 @@ class Cli():
         """
         if args == []:
             print("What manual page do you want?")
-            print("For example, try 'man man'.")
+            print("For example, try 'man net'.")
+        elif args[0] == 'net':
+            print("\n   ============== args ===================")
+            print("      1. join     : Join Network.")
+            print("      2. leave    : Leave Network.")
+            print("      3. upload   : Upload File.")
+            print("      4. download : Download File.")
+
+            print("      5. ft       : Print Finger Table.")
+            print("      6. nb       : Print my predecessor\n"
+                  "                    and successor.")
+            print("      7. exit     : terminate net server")
+            print("   ============ man net ==================\n")
+        elif args[0] == 'all':
+            print("\n   ============== args ===================")
         else:
             print(oper, args[0])
     # to do
