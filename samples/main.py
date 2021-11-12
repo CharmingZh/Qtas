@@ -112,17 +112,19 @@ class Node:
                 connection, address = self.ServerSocket.accept()
                 connection.settimeout(120)
                 # threading.Thread(target=self.connectionThread, args=(connection, address)).start()
-                threading.Thread(target=self.connectionThread, args=(connection, address)).start()
-                #print("[listenThread start]")
+                self.t1 = threading.Thread(target=self.connectionThread, args=(connection, address))
+                self.t1.setDaemon(True)
+                self.t1.start()
+                print("[listenThread start]")
             except socket.error:
-                print("Error: Connection not accepted. Try again.")
+                print("[listenThread]: Error, Connection not accepted. Try again.")
                 pass  # print("Error: Connection not accepted. Try again.")
 
     # Thread for each peer connection
     def connectionThread(self, connection, address):
-        #print("connectionThread")
+        # print("connectionThread")
         rDataList = pickle.loads(connection.recv(buffer))
-        #print("Client rDataList = pickle.loads(connection.recv(buffer))")
+        # print("Client rDataList = pickle.loads(connection.recv(buffer))")
         # 5 Types of connections
         # type 0: peer connect
         # type 1: client
@@ -134,12 +136,12 @@ class Node:
             print("[connectionThread] Connection with:", address[0], ":", address[1])
             print("[connectionThread] Join network request received")
             self.joinNode(connection, address, rDataList)
-            self.printMenu()
+            # self.printMenu()
         elif connectionType == 1:
             print("[connectionThread] Connection with:", address[0], ":", address[1])
             print("[connectionThread] Upload/Download request received")
             self.transferFile(connection, address, rDataList)
-            self.printMenu()
+            # self.printMenu()
         elif connectionType == 2:
             # print("Ping received")
             connection.sendall(pickle.dumps(self.pred))
@@ -186,25 +188,25 @@ class Node:
         fileID = getHash(filename)
         # IF client wants to download file
         if choice == 0:
-            print("transferFile: Download request for file:", filename)
+            print("[transferFile]: Download request for file:", filename)
             try:
                 # First it searches its own directory (fileIDList). If not found, send does not exist
                 if filename not in self.filenameList:
                     connection.send("transferFile: NotFound".encode('utf-8'))
-                    print("transferFile: File not found")
+                    print("[transferFile]: File not found")
                 else:  # If file exists in its directory   # Sending DATA LIST Structure (sDataList):
-                    connection.send("Found".encode('utf-8'))
+                    connection.send("[transferFile]: Found".encode('utf-8'))
                     self.sendFile(connection, filename)
             except ConnectionResetError as error:
-                print(error, "\ntransferFile: Client disconnected\n\n")
+                print(error, "\n[transferFile]: Client disconnected\n\n")
         # ELSE IF client wants to upload something to network
         elif choice == 1 or choice == -1:
-            print("transferFile: Receiving file:", filename)
+            print("[transferFile]: Receiving file:", filename)
             fileID = getHash(filename)
-            print("transferFile: Uploading file ID:", fileID)
+            print("[transferFile]: Uploading file ID:", fileID)
             self.filenameList.append(filename)
             self.receiveFile(connection, filename)
-            print("transferFile: Upload complete")
+            print("[transferFile]: Upload complete")
             # Replicating file to successor as well
             if choice == 1:
                 if self.address != self.succ:
@@ -306,7 +308,7 @@ class Node:
                     self.succID = self.id
                 self.updateFTable()
                 self.updateOtherFTables()
-                self.printMenu()
+                # self.printMenu()
 
     # Handles all outgoing connections
     def asAClientThread(self, oper, opt, args):
@@ -344,30 +346,32 @@ class Node:
         elif userChoice == "exit":
             print("[Net_control-exit] Terminate net service")
             self.ServerSocket.close()
+
             print("Bye ~")
             sys.exit(0)
         # Reprinting Menu
         # self.printMenu()
 
     def printNeighbor(self):
+        print("[printNeighbor]")
         print("My ID:", self.id, "Predecessor:", self.predID, "Successor:", self.succID)
 
     def sendJoinRequest(self, ip, port):
         try:
-            #print("sendJoinRequest")
+            # print("sendJoinRequest")
             recvIPPort = self.getSuccessor((ip, port), self.id)
-            #print("getSuccessor")
+            # print("getSuccessor")
             peerSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            #print("socket")
+            # print("socket")
             peerSocket.connect(recvIPPort)
-            #print("connect")
+            # print("connect")
             sDataList = [0, self.address]
-            #print("sDataList write")
+            # print("sDataList write")
 
             peerSocket.sendall(pickle.dumps(sDataList))  # Sending self peer address to add to network
-            #print("sendall")
+            # print("sendall")
             rDataList = pickle.loads(peerSocket.recv(buffer))  # Receiving new pred
-            #print("pickle.loads")
+            # print("pickle.loads")
             # Updating pred and succ
             # print('before', self.predID, self.succID)
             self.pred = rDataList[0]
@@ -396,9 +400,9 @@ class Node:
         pSocket.connect(self.pred)
         pSocket.sendall(pickle.dumps([4, 1, self.succ]))
         pSocket.close()
-        print("leaveNetwork: I had files:", self.filenameList)
+        print("[leaveNetwork]: I had files:", self.filenameList)
         # And also replicating its files to succ as a client
-        print("leaveNetwork: Replicating files to other nodes before leaving")
+        print("[leaveNetwork]: Replicating files to other nodes before leaving")
         for filename in self.filenameList:
             pSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             pSocket.connect(self.succ)
@@ -409,7 +413,7 @@ class Node:
                 pSocket.recv(buffer)
                 self.sendFile(pSocket, filename)
                 pSocket.close()
-                print("File replicated")
+                print("[leaveNetwork]: File replicated")
             pSocket.close()
 
         self.updateOtherFTables()  # Telling others to update their f tables
@@ -419,10 +423,10 @@ class Node:
         self.succ = (self.ip, self.port)
         self.succID = self.id
         self.fingerTable.clear()
-        print("leaveNetwork: ", self.address, "has left the network")
+        print("[leaveNetwork]: ", self.address, "has left the network")
 
     def uploadFile(self, filename, recvIPport, replicate):
-        print("uploadFile：Uploading file", filename)
+        print("[uploadFile]：Uploading file", filename)
         # If not found send lookup request to get peer to upload file
         sDataList = [1]
         if replicate:
@@ -439,11 +443,11 @@ class Node:
             cSocket.sendall(pickle.dumps(sDataList))
             self.sendFile(cSocket, filename)
             cSocket.close()
-            print("uploadFile：File uploaded")
+            print("[uploadFile]：File uploaded")
         except IOError:
-            print("uploadFile：File not in directory")
+            print("[uploadFile]：File not in directory")
         except socket.error:
-            print("uploadFile：Error in uploading file")
+            print("[uploadFile]：Error in uploading file")
 
     def downloadFile(self, filename):
         print("downloadFile: Downloading file", filename)
@@ -457,9 +461,9 @@ class Node:
         # Receiving confirmation if file found or not
         fileData = cSocket.recv(buffer)
         if fileData == b"NotFound":
-            print("downloadFile: File not found:", filename)
+            print("[downloadFile]: File not found:", filename)
         else:
-            print("downloadFile: Receiving file:", filename)
+            print("[downloadFile]: Receiving file:", filename)
             self.receiveFile(cSocket, filename)
 
     def getSuccessor(self, address, keyID):
