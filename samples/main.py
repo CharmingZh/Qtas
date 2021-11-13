@@ -111,11 +111,13 @@ class Node:
             try:
                 connection, address = self.ServerSocket.accept()
                 connection.settimeout(120)
-                # threading.Thread(target=self.connectionThread, args=(connection, address)).start()
+                threading.Thread(target=self.connectionThread, args=(connection, address)).start()
+                """
                 self.t1 = threading.Thread(target=self.connectionThread, args=(connection, address))
                 self.t1.setDaemon(True)
                 self.t1.start()
-                print("[listenThread start]")
+                """
+                # print("[listenThread start]")
             except socket.error:
                 print("[listenThread]: Error, Connection not accepted. Try again.")
                 pass  # print("Error: Connection not accepted. Try again.")
@@ -182,7 +184,9 @@ class Node:
         print("[joinNode success]")
 
     def transferFile(self, connection, address, rDataList):
-        # Choice: 0 = download, 1 = upload
+        # Choice:
+        # 0 = download
+        # 1 = upload
         choice = rDataList[1]
         filename = rDataList[2]
         fileID = getHash(filename)
@@ -192,7 +196,7 @@ class Node:
             try:
                 # First it searches its own directory (fileIDList). If not found, send does not exist
                 if filename not in self.filenameList:
-                    connection.send("transferFile: NotFound".encode('utf-8'))
+                    connection.send("[transferFile]: NotFound".encode('utf-8'))
                     print("[transferFile]: File not found")
                 else:  # If file exists in its directory   # Sending DATA LIST Structure (sDataList):
                     connection.send("[transferFile]: Found".encode('utf-8'))
@@ -314,7 +318,7 @@ class Node:
     def asAClientThread(self, oper, opt, args):
         # self.printMenu()
         # userChoice = input()
-
+        global CONNSTAT
         userChoice = oper
         option = opt
         arguments = args
@@ -346,7 +350,6 @@ class Node:
         elif userChoice == "exit":
             print("[Net_control-exit] Terminate net service")
             self.ServerSocket.close()
-
             print("Bye ~")
             sys.exit(0)
         # Reprinting Menu
@@ -446,6 +449,7 @@ class Node:
             print("[uploadFile]：File uploaded")
         except IOError:
             print("[uploadFile]：File not in directory")
+            Rfile.ls()
         except socket.error:
             print("[uploadFile]：Error in uploading file")
 
